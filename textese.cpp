@@ -24,9 +24,8 @@ using namespace std;
 std::string txt;
 typedef unsigned char byte;
 #define skip if(false)
-#define _ nullptr,
 
-
+bool IsLetter(char c);
 
 /*
 
@@ -41,6 +40,8 @@ typedef unsigned char byte;
 
 */
 
+//TODO: insert dummy symbol in d beginnin
+
 void Replace(std::string& txt,
 	const std::string& oldStr,
 	const std::string& newStr)
@@ -51,6 +52,81 @@ void Replace(std::string& txt,
 		pos += newStr.length();
 	}
 }
+
+void ReplaceEndin(std::string& txt,
+	const std::string& oldStr,
+	const std::string& newStr)
+{
+	std::string::size_type pos = 0u;
+	while ((pos = txt.find(oldStr, pos)) != std::string::npos) {
+		if (/*IsLetter(txt[pos - 1]) && */!IsLetter(txt[pos + oldStr.length()]))
+		{
+			txt.replace(pos, oldStr.length(), newStr);
+			pos += newStr.length();
+		}
+		else
+		{
+			pos += oldStr.length();
+		}
+	}
+}
+
+void ReplaceBeginnin(std::string& txt,
+	const std::string& oldStr,
+	const std::string& newStr)
+{
+	std::string::size_type pos = 0u;
+	while ((pos = txt.find(oldStr, pos)) != std::string::npos) {
+		if (!IsLetter(txt[pos - 1])/* && IsLetter(txt[pos + oldStr.length()])*/)
+		{
+			txt.replace(pos, oldStr.length(), newStr);
+			pos += newStr.length();
+		}
+		else
+		{
+			pos += oldStr.length();
+		}
+	}
+}
+
+void ReplaceBeginninEndin(std::string& txt,
+	const std::string& oldStr,
+	const std::string& newStr)
+{
+	std::string::size_type pos = 0u;
+	while ((pos = txt.find(oldStr, pos)) != std::string::npos) {
+		if (/*IsLetter(txt[pos - 1]) && */IsLetter(txt[pos + oldStr.length()]))
+		{
+			txt.replace(pos, oldStr.length(), newStr);
+			pos += newStr.length();
+		}
+		else
+		{
+			pos += oldStr.length();
+		}
+	}
+}
+
+
+void ReplaceWord(std::string& txt,
+	const std::string& oldStr,
+	const std::string& newStr)
+{
+	std::string::size_type pos = 0u;
+	while ((pos = txt.find(oldStr, pos)) != std::string::npos) {
+		if (!IsLetter(txt[pos - 1]) && !IsLetter(txt[pos + oldStr.length()]))
+		{
+			txt.replace(pos, oldStr.length(), newStr);
+			pos += newStr.length();
+		}
+		else
+		{
+			pos += oldStr.length();
+		}
+	}
+}
+
+
 
 bool IsLetter(char c)
 {
@@ -94,7 +170,7 @@ void ParseInput()
 			i++;
 		}
 	}
-	for (int i = 0; i < 96/*256*/; i++)
+	for (int i = 0; i < 256; i++)
 	{
 		if (dict[i][0])
 		{
@@ -104,15 +180,19 @@ void ParseInput()
 			bool flag_end = false;
 			int sO_endpos = sO.length() - 1;
 
-			if (sO[0] == '-')
+			//TODO:use it
+			skip
 			{
-				flag_begin = true;
-				sO = sO.substr(1, sO_endpos);
-			}
-			if (sO[sO_endpos] == '-')
-			{
-				flag_end = true;
-				sO = sO.substr(0, sO_endpos - 1);
+				if (sO[0] == '-')
+				{
+					flag_begin = true;
+					sO = sO.substr(1, sO_endpos);
+				}
+				if (sO[sO_endpos] == '-')
+				{
+					flag_end = true;
+					sO = sO.substr(0, sO_endpos - 1);
+				}
 			}
 
 			for (int k = 1; k < 8; k++)
@@ -120,25 +200,31 @@ void ParseInput()
 				if (dict[i][k])
 				{
 					std::string s = dict[i][k];
-					int endpos = s.length() - 1;
+					int l = s.length() - 1;
 					if (s[0] == '-')
 					{
-						if (s[endpos] == '-')// && !IsLetter(txt[i - 1]) && !IsLetter(txt[i + s.length() + 1]))
+						if (s[l] == '-')// && !IsLetter(txt[i - 1]) && !IsLetter(txt[i + s.length() + 1]))
 						{
-							Replace(txt, s.substr(1, endpos - 1), sO);
+							string _i = s.substr(1, l - 1);
+							string o = sO.substr(1, sO.length() - 2);
+							Replace/*BeginninEndin*/(txt, _i, o);
 						}
 						else
 						{
-							Replace(txt, s.substr(1, endpos), sO);
+							string _i = s.substr(1, l);
+							string o = sO.substr(1, sO.length() - 1);
+							ReplaceEndin(txt, _i, o);
 						}
 					}
-					else if (s[endpos] == '-')
+					else if (s[l] == '-')
 					{
-						Replace(txt, s.substr(0, endpos - 1), sO);
+						string _i = s.substr(0, l);
+						string o = sO.substr(0, sO.length() - 1);
+						ReplaceBeginnin(txt, _i, o);
 					}
 					else
 					{
-						Replace(txt, s, sO);
+						ReplaceWord(txt, s, sO);
 					}
 				}
 				else
@@ -177,9 +263,9 @@ void ParseInput()
 
 
 	skip
-	for (int i = 0; i < txt.length(); i++)
-		if(!IsLetter(txt[i]))
-			txt[i] = '+';
+		for (int i = 0; i < txt.length(); i++)
+			if(!IsLetter(txt[i]))
+				txt[i] = '+';
 }
 
 
@@ -212,16 +298,23 @@ void Load()
 
 	myFile.close();
 
-
 }
 
 
 int main()
 {
-
+	cout << "INPUT:" << endl;
 	Load();
+	int i = txt.length();
+	cout << txt << endl << endl;
+
 	ParseInput();
-	cout << txt;
+	int o = txt.length();
+	float compression = round((float)o / (float)i * 1000.f)/10.f;
+
+	cout << "OUTPUT:" << endl;
+	cout << txt << endl << endl;
+	cout << i << "->" << o << " (" << compression << "%)";
 	int k; cin >> k;
 
 }
